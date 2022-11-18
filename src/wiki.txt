@@ -1,0 +1,26 @@
+var q := new queue
+
+generator produce
+    loop
+        while q is not full
+            create some new items
+            add the items to q
+        yield consume
+
+generator consume
+    loop
+        while q is not empty
+            remove some items from q
+            use the items
+        yield produce
+
+subroutine dispatcher
+    var d := new dictionary(generator → iterator)
+    d[produce] := start produce
+    d[consume] := start consume
+    var current := produce
+    loop
+        call current
+        current := next d[current]
+
+call dispatcher
