@@ -6,7 +6,8 @@ use core::pin::Pin;
 use either::Either;
 
 #[propane::generator]
-fn fizz_buzzs() -> &'static str {
+fn fizz_buzz(_:i32) -> &'static str {
+    let k = yield "";
     for x in 1..10009000 {
         match (x % 3 == 0, x % 5 == 0) {
             (true, true) => yield "FizzBuzz",
@@ -17,7 +18,7 @@ fn fizz_buzzs() -> &'static str {
     }
 }
 #[propane::generator]
-fn fizz_buzz() -> i32 {
+fn fizz_buzzx() -> i32 {
     for x in 1..10009000 {
         match (x % 3 == 0, x % 5 == 0) {
             (true, true) => yield 1,
@@ -43,14 +44,16 @@ fn main() {
     //    }
 
     let mut mysrc = move || {
-        for x in 1..1000000{
+        for x in 1..3000000 {
             yield x;
         }
     };
 
     let mut mysink = move |_: i32| loop {
         let a = yield;
-        //println!("got a {}", a);
+        if a % 100000 == 0 {
+            println!("got a {}", a);
+        }
     };
 
     let mut a = Supply {
@@ -59,24 +62,24 @@ fn main() {
     };
     let t = std::time::Instant::now();
     let mut n = 0;
-    // loop {
-    //     match Pin::new(&mut mysink).resume(9) {
-    //         //GeneratorState::Yielded(_) => todo!(),
-    //         GeneratorState::Complete(_) => break,
-    //         GeneratorState::Yielded(_) => (),
-    //     }
-    //     n += 1;
-    // }
-    let mut z=0;
-    for x in fizz_buzz() {
-        z+=x;
-        n+=1;
+    loop {
+        match Pin::new(&mut a).resume(()) {
+            //GeneratorState::Yielded(_) => todo!(),
+            GeneratorState::Complete(_) => break,
+            GeneratorState::Yielded(_) => (),
+        }
+        n += 1;
     }
+    // let mut z=0;
+    // for x in fizz_buzz() {
+    //    // z+=x;
+    //     n+=1;
+    // }
     let el = t.elapsed();
-    println!("z {}",z);
-    println!("n {}",n);
+    //println!("z {}",z);
+    println!("n {}", n);
     println!("el {:?}", el);
-    println!("ns/iter {:?}",el.as_nanos() as f64/(n as f64));
+    println!("ns/iter {:?}", el.as_nanos() as f64 / (n as f64));
     // println!("x {:?}", Pin::new(&mut a).resume(()));
     // println!("x {:?}", Pin::new(&mut a).resume(()));
     // println!("x {:?}", Pin::new(&mut a).resume(()));
